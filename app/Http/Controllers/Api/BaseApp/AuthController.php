@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Api\BaseApp;
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Support\LegacyApiResponse;
-use App\Support\LegacyPassword;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;  
 use Throwable;
 
 class AuthController extends Controller
@@ -24,7 +24,7 @@ class AuthController extends Controller
                 return LegacyApiResponse::json(0, 'Wrong username or password');
             }
 
-            if (LegacyPassword::verify((string) ($payload['password'] ?? ''), $user->password)) {
+            if (Hash::check((string) ($payload['password'] ?? ''), $user->password)) {
                 $user->secret_key = $this->generateToken();
                 $user->save();
 

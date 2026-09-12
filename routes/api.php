@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\BaseApp\AdminManagementController;
 use App\Http\Controllers\Api\BaseApp\AuthController;
 use App\Http\Controllers\Api\BaseApp\CategoryController;
 use App\Http\Controllers\Api\BaseApp\CustomerSupplierController;
+use App\Http\Controllers\Api\BaseApp\EmployeeController;
 use App\Http\Controllers\Api\BaseApp\ExpenseController;
 use App\Http\Controllers\Api\BaseApp\PurchaseController;
 use App\Http\Controllers\Api\BaseApp\SaleController;
@@ -14,9 +16,16 @@ use App\Http\Middleware\BaseAppChannelToken;
 use App\Http\Middleware\LegacyLoginRateLimit;
 use Illuminate\Support\Facades\Route;
 
+
+
+// ✅ LOGIN without middleware (outside the group)
+Route::post('/v1/baseApp/login', [AuthController::class, 'login'])
+    ->middleware(LegacyLoginRateLimit::class);
+Route::post('/v2/baseApp/login', [AuthController::class, 'login'])
+    ->middleware(LegacyLoginRateLimit::class);
+
 $baseAppRoutes = function (): void {
-    Route::post('/login', [AuthController::class, 'login'])
-        ->middleware(LegacyLoginRateLimit::class);
+    
 
     Route::post('/get-shops', [ShopController::class, 'index']);
     Route::post('/create-shop', [ShopController::class, 'store']);
@@ -49,6 +58,8 @@ $baseAppRoutes = function (): void {
     Route::post('/create-expense', [ExpenseController::class, 'store']);
     Route::post('/delete-expense', [ExpenseController::class, 'destroy']);
 
+    Route::post('/create-employee', [EmployeeController::class, 'store']);
+
     Route::get('/subscription-plans', [SubscriptionPlanController::class, 'index']);
     Route::post('/subscription-plans', [SubscriptionPlanController::class, 'store']);
     Route::match(['put', 'patch'], '/subscription-plans/{planId}', [SubscriptionPlanController::class, 'update']);
@@ -58,6 +69,15 @@ $baseAppRoutes = function (): void {
     Route::post('/create-subscription-plan', [SubscriptionPlanController::class, 'store']);
     Route::post('/update-subscription-plan', [SubscriptionPlanController::class, 'update']);
     Route::post('/delete-subscription-plan', [SubscriptionPlanController::class, 'destroy']);
+
+    //business owner
+
+    Route::post('/create-business-owner', [AdminManagementController::class, 'createBusinessOwner'])
+        ->middleware(BaseAppChannelToken::class);
+    Route::get('/business-owners', [AdminManagementController::class, 'getBusinessOwners'])
+        ->middleware(BaseAppChannelToken::class);
+    Route::put('/business-owner/{admin}', [AdminManagementController::class, 'updateBusinessOwner'])
+        ->middleware(BaseAppChannelToken::class);
 };
 
 foreach (['v1/baseApp', 'v2/baseApp'] as $baseAppPrefix) {
